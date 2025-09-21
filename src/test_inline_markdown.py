@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
 
 class TestSplitNodesDelimiter(unittest.TestCase):
 
@@ -149,6 +149,281 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             TextNode(" spaces", TextType.TEXT)
         ]
         self.assertEqual(new_nodes, expected)
+
+
+class TestExtractMarkdownImages(unittest.TestCase):
+
+    def test_single_image(self):
+        text = "This is text with an ![image](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = [("image", "https://example.com/image.png")]
+        self.assertEqual(result, expected)
+
+    def test_multiple_images(self):
+        text = "Text with ![first image](https://example.com/first.png) and ![second image](https://example.com/second.jpg)"
+        result = extract_markdown_images(text)
+        expected = [
+            ("first image", "https://example.com/first.png"),
+            ("second image", "https://example.com/second.jpg")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_with_empty_alt_text(self):
+        text = "Image with no alt text: ![](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = [("", "https://example.com/image.png")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_empty_url(self):
+        text = "Image with no URL: ![alt text]()"
+        result = extract_markdown_images(text)
+        expected = [("alt text", "")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_spaces_in_alt_text(self):
+        text = "![This is a long alt text with spaces](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = [("This is a long alt text with spaces", "https://example.com/image.png")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_special_characters_in_alt_text(self):
+        text = "![Alt with $pecial ch@r$ & symbols!](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = [("Alt with $pecial ch@r$ & symbols!", "https://example.com/image.png")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_relative_path(self):
+        text = "Local image: ![local](./images/local.png)"
+        result = extract_markdown_images(text)
+        expected = [("local", "./images/local.png")]
+        self.assertEqual(result, expected)
+
+    def test_no_images_in_text(self):
+        text = "This text has no images, just regular text and [regular links](https://example.com)"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_malformed_image_missing_exclamation(self):
+        text = "This is not an image: [alt text](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_malformed_image_missing_brackets(self):
+        text = "Malformed: !alt text](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_malformed_image_missing_parentheses(self):
+        text = "Malformed: ![alt text]https://example.com/image.png"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_image_with_nested_brackets_in_alt_not_matched(self):
+        text = "![Image with [nested] brackets](https://example.com/image.png)"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_image_with_nested_parentheses_in_url_not_matched(self):
+        text = "![alt](https://example.com/path(with)parentheses.png)"
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_empty_string(self):
+        text = ""
+        result = extract_markdown_images(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_multiple_images_with_text_between(self):
+        text = "Start ![first](url1.png) middle text ![second](url2.jpg) end text ![third](url3.gif)"
+        result = extract_markdown_images(text)
+        expected = [
+            ("first", "url1.png"),
+            ("second", "url2.jpg"),
+            ("third", "url3.gif")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_with_underscores_and_hyphens(self):
+        text = "![file_name-test](path/to/image_file-name.png)"
+        result = extract_markdown_images(text)
+        expected = [("file_name-test", "path/to/image_file-name.png")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_numbers(self):
+        text = "![image123](file123.png)"
+        result = extract_markdown_images(text)
+        expected = [("image123", "file123.png")]
+        self.assertEqual(result, expected)
+
+    def test_consecutive_images(self):
+        text = "![first](img1.png)![second](img2.png)"
+        result = extract_markdown_images(text)
+        expected = [
+            ("first", "img1.png"),
+            ("second", "img2.png")
+        ]
+        self.assertEqual(result, expected)
+
+
+class TestExtractMarkdownLinks(unittest.TestCase):
+
+    def test_single_link(self):
+        text = "This is text with a [link](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = [("link", "https://example.com")]
+        self.assertEqual(result, expected)
+
+    def test_multiple_links(self):
+        text = "Text with [first link](https://example.com) and [second link](https://google.com)"
+        result = extract_markdown_links(text)
+        expected = [
+            ("first link", "https://example.com"),
+            ("second link", "https://google.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_with_empty_text(self):
+        text = "Link with no text: [](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = [("", "https://example.com")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_empty_url(self):
+        text = "Link with no URL: [link text]()"
+        result = extract_markdown_links(text)
+        expected = [("link text", "")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_spaces_in_text(self):
+        text = "[This is a long link text with spaces](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = [("This is a long link text with spaces", "https://example.com")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_special_characters_in_text(self):
+        text = "[Link with $pecial ch@r$ & symbols!](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = [("Link with $pecial ch@r$ & symbols!", "https://example.com")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_relative_path(self):
+        text = "Local link: [local page](./pages/about.html)"
+        result = extract_markdown_links(text)
+        expected = [("local page", "./pages/about.html")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_anchor(self):
+        text = "Link with anchor: [section](https://example.com/page#section)"
+        result = extract_markdown_links(text)
+        expected = [("section", "https://example.com/page#section")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_query_parameters(self):
+        text = "Link with params: [search](https://example.com/search?q=test&type=all)"
+        result = extract_markdown_links(text)
+        expected = [("search", "https://example.com/search?q=test&type=all")]
+        self.assertEqual(result, expected)
+
+    def test_no_links_in_text(self):
+        text = "This text has no links, just regular text and ![images](https://example.com/image.png)"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_malformed_link_missing_brackets(self):
+        text = "Malformed: link text](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_malformed_link_missing_parentheses(self):
+        text = "Malformed: [link text]https://example.com"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_link_with_nested_brackets_in_text_not_matched(self):
+        text = "[Link with [nested] brackets](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_link_with_nested_parentheses_in_url_not_matched(self):
+        text = "[link](https://example.com/path(with)parentheses)"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_empty_string(self):
+        text = ""
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_multiple_links_with_text_between(self):
+        text = "Start [first](url1.com) middle text [second](url2.com) end text [third](url3.com)"
+        result = extract_markdown_links(text)
+        expected = [
+            ("first", "url1.com"),
+            ("second", "url2.com"),
+            ("third", "url3.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_links_and_images_mixed(self):
+        text = "Mixed content: [link](https://example.com) and ![image](image.png) and [another link](test.com)"
+        result = extract_markdown_links(text)
+        expected = [
+            ("link", "https://example.com"),
+            ("another link", "test.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_with_markdown_in_text(self):
+        text = "[Link with **bold** text](https://example.com)"
+        result = extract_markdown_links(text)
+        expected = [("Link with **bold** text", "https://example.com")]
+        self.assertEqual(result, expected)
+
+    def test_consecutive_links(self):
+        text = "[first](url1.com)[second](url2.com)"
+        result = extract_markdown_links(text)
+        expected = [
+            ("first", "url1.com"),
+            ("second", "url2.com")
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_link_not_matched_by_link_extractor(self):
+        text = "This ![image](image.png) should not be matched as a link"
+        result = extract_markdown_links(text)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_link_with_underscores_and_hyphens(self):
+        text = "[link_name-test](path/to/page_name-file.html)"
+        result = extract_markdown_links(text)
+        expected = [("link_name-test", "path/to/page_name-file.html")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_numbers(self):
+        text = "[link123](page123.html)"
+        result = extract_markdown_links(text)
+        expected = [("link123", "page123.html")]
+        self.assertEqual(result, expected)
+
+    def test_link_immediately_after_image(self):
+        text = "![image](img.png)[link](page.html)"
+        result = extract_markdown_links(text)
+        expected = [("link", "page.html")]
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
