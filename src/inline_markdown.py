@@ -29,3 +29,63 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     return re.findall(pattern, text)
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        remaining = node.text
+        images = extract_markdown_images(remaining)
+        if not images:
+            new_nodes.append(node)
+            continue
+
+        for alt, url in images:
+            snippet = f"![{alt}]({url})"
+            before_after = remaining.split(snippet, 1)
+            before = before_after[0]
+            after = before_after[1] if len(before_after) > 1 else ""
+
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.IMAGE, url))
+
+            remaining = after
+
+        if remaining:
+            new_nodes.append(TextNode(remaining, TextType.TEXT))
+    
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        remaining = node.text
+        images = extract_markdown_links(remaining)
+        if not images:
+            new_nodes.append(node)
+            continue
+
+        for alt, url in images:
+            snippet = f"[{alt}]({url})"
+            before_after = remaining.split(snippet, 1)
+            before = before_after[0]
+            after = before_after[1] if len(before_after) > 1 else ""
+
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.LINK, url))
+
+            remaining = after
+
+        if remaining:
+            new_nodes.append(TextNode(remaining, TextType.TEXT))
+    
+    return new_nodes
