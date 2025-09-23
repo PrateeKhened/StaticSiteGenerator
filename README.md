@@ -4,27 +4,33 @@ A Python-based static site generator that converts markdown files to static webs
 
 ## 🚀 Features
 
+- **Complete Markdown Processing** - Full markdown-to-HTML conversion pipeline
+- **Block-Level Elements** - Support for headings, paragraphs, code blocks, quotes, and lists
+- **Inline Formatting** - Bold, italic, code, links, and images with delimiter processing
 - **Text Processing Pipeline** - Clean separation between text representation and HTML generation
-- **Markdown Support** - Extract and process markdown images and links
-- **Inline Formatting** - Support for bold, italic, and code formatting with delimiter processing
 - **Modular Architecture** - Well-structured codebase with clear separation of concerns
-- **Comprehensive Testing** - Extensive test suite with 100+ test cases
+- **Comprehensive Testing** - Extensive test suite with 120+ test cases covering all components
 
 ## 📁 Project Structure
 
 ```
 StaticSiteGenerator/
 ├── src/
-│   ├── htmlnode.py          # HTML generation layer
-│   ├── textnode.py          # Text representation layer
-│   ├── inline_markdown.py   # Markdown processing utilities
-│   ├── main.py             # Application entry point
-│   ├── test_htmlnode.py    # HTML node tests
-│   ├── test_textnode.py    # Text node tests
-│   └── test_inline_markdown.py # Markdown processing tests
-├── main.sh                 # Application runner script
-├── test.sh                # Test runner script
-└── README.md              # Project documentation
+│   ├── htmlnode.py              # HTML generation layer
+│   ├── textnode.py              # Text representation layer
+│   ├── inline_markdown.py       # Inline markdown processing utilities
+│   ├── block_markdown.py        # Block-level markdown processing
+│   ├── markdown_to_html.py      # Complete markdown-to-HTML conversion
+│   ├── main.py                 # Application entry point
+│   ├── test_htmlnode.py        # HTML node tests
+│   ├── test_textnode.py        # Text node tests
+│   ├── test_inline_markdown.py # Inline markdown tests
+│   ├── test_block_markdown.py  # Block markdown tests
+│   └── test_markdown_to_html.py # Integration tests
+├── main.sh                     # Application runner script
+├── test.sh                    # Test runner script
+├── CLAUDE.md                  # Claude Code guidance
+└── README.md                  # Project documentation
 ```
 
 ## 🏗️ Architecture
@@ -41,10 +47,19 @@ StaticSiteGenerator/
 - **`LeafNode`** - Terminal nodes with content (e.g., `<p>text</p>`, `<b>bold</b>`)
 - **`ParentNode`** - Container nodes with children (e.g., `<div><span>content</span></div>`)
 
-#### Markdown Processing (`inline_markdown.py`)
+#### Inline Markdown Processing (`inline_markdown.py`)
+- **`text_to_textnodes()`** - Main pipeline converting raw text to structured TextNodes
 - **`split_nodes_delimiter()`** - Process inline formatting delimiters (**, *, `)
 - **`extract_markdown_images()`** - Extract image references from markdown text
 - **`extract_markdown_links()`** - Extract link references from markdown text
+
+#### Block Markdown Processing (`block_markdown.py`)
+- **`BlockType`** - Enum defining paragraph, heading, code, quote, unordered_list, ordered_list
+- **`markdown_to_blocks()`** - Split markdown text into logical blocks
+- **`block_to_block_type()`** - Classify markdown blocks by their type
+
+#### Markdown-to-HTML Conversion (`markdown_to_html.py`)
+- **`markdown_to_html_node()`** - Complete pipeline converting markdown documents to HTML node trees
 
 ### Design Patterns
 
@@ -85,54 +100,81 @@ python3 -m unittest discover -s src
 python3 -m unittest src.test_textnode
 python3 -m unittest src.test_htmlnode
 python3 -m unittest src.test_inline_markdown
+python3 -m unittest src.test_block_markdown
+python3 -m unittest src.test_markdown_to_html
 ```
 
 ## 📝 Usage Examples
 
-### Creating HTML from Text
+### Complete Markdown-to-HTML Conversion
 
 ```python
-from textnode import TextNode, TextType, text_node_to_html_node
+from markdown_to_html import markdown_to_html_node
 
-# Create a text node
-text_node = TextNode("Hello World", TextType.BOLD)
+# Convert complete markdown document
+markdown = """# My Blog Post
 
-# Convert to HTML node
-html_node = text_node_to_html_node(text_node)
+This is a paragraph with **bold** and *italic* text.
 
-# Generate HTML
-print(html_node.to_html())  # Output: <b>Hello World</b>
+## Code Example
+
+```python
+def hello():
+    print("Hello, World!")
 ```
 
-### Processing Markdown Delimiters
+> This is a quote with some important information.
 
-```python
-from inline_markdown import split_nodes_delimiter
-from textnode import TextNode, TextType
+- First item
+- Second item
+- Third item
+"""
 
-# Create text with bold formatting
-nodes = [TextNode("This has **bold** text", TextType.TEXT)]
+# Convert to HTML node tree
+html_node = markdown_to_html_node(markdown)
 
-# Process bold delimiters
-result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
-
-# Result: [TextNode("This has ", TEXT), TextNode("bold", BOLD), TextNode(" text", TEXT)]
+# Generate final HTML
+html_output = html_node.to_html()
 ```
 
-### Extracting Markdown Elements
+### Processing Inline Markdown
 
 ```python
-from inline_markdown import extract_markdown_images, extract_markdown_links
+from inline_markdown import text_to_textnodes
+from textnode import text_node_to_html_node
 
-# Extract images
-text = "Check out this ![cool image](https://example.com/image.png)"
-images = extract_markdown_images(text)
-# Result: [("cool image", "https://example.com/image.png")]
+# Process text with multiple inline formats
+text = "This has **bold**, *italic*, and `code` formatting with a [link](https://example.com)"
+text_nodes = text_to_textnodes(text)
 
-# Extract links
-text = "Visit [our website](https://example.com) for more info"
-links = extract_markdown_links(text)
-# Result: [("our website", "https://example.com")]
+# Convert to HTML nodes
+html_nodes = [text_node_to_html_node(node) for node in text_nodes]
+```
+
+### Working with Block Types
+
+```python
+from block_markdown import markdown_to_blocks, block_to_block_type, BlockType
+
+# Split markdown into blocks
+markdown = """# Heading
+
+Paragraph text here.
+
+```
+code block
+```"""
+
+blocks = markdown_to_blocks(markdown)
+# Result: ["# Heading", "Paragraph text here.", "```\ncode block\n```"]
+
+# Classify each block
+for block in blocks:
+    block_type = block_to_block_type(block)
+    print(f"{block_type}: {block}")
+# Output: BlockType.HEADING: # Heading
+#         BlockType.PARAGRAPH: Paragraph text here.
+#         BlockType.CODE: ```\ncode block\n```
 ```
 
 ## 🧪 Testing
@@ -141,7 +183,9 @@ The project includes comprehensive test coverage:
 
 - **`test_textnode.py`** - TextNode functionality and text-to-HTML conversion
 - **`test_htmlnode.py`** - HTML node hierarchy and generation
-- **`test_inline_markdown.py`** - Markdown processing and extraction utilities
+- **`test_inline_markdown.py`** - Inline markdown processing and extraction utilities
+- **`test_block_markdown.py`** - Block-level markdown processing and classification
+- **`test_markdown_to_html.py`** - Complete markdown-to-HTML conversion pipeline
 
 ### Test Categories
 
@@ -169,12 +213,14 @@ The project includes comprehensive test coverage:
 
 ## 📋 Roadmap
 
-- [ ] Full markdown parsing (headers, lists, paragraphs)
+- [x] Full markdown parsing (headers, lists, paragraphs, quotes, code blocks)
+- [x] Complete markdown-to-HTML conversion pipeline
 - [ ] File system integration for reading markdown files
 - [ ] Template system for HTML generation
 - [ ] CSS styling support
 - [ ] Static file copying
 - [ ] Build system for generating complete websites
+- [ ] Configuration system for customization
 
 ## 🤝 Contributing
 
