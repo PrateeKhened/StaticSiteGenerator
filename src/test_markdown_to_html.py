@@ -243,6 +243,20 @@ some code
         blockquote = result.children[0]
         self.assertTrue(len(blockquote.children) > 1)
 
+    def test_quote_with_empty_lines(self):
+        markdown = '''> "I am in fact a Hobbit in all but size."
+>
+> -- J.R.R. Tolkien'''
+        result = markdown_to_html_node(markdown)
+
+        expected = ParentNode("div", [
+            ParentNode("blockquote", [
+                LeafNode(None, '"I am in fact a Hobbit in all but size."\n\n-- J.R.R. Tolkien')
+            ])
+        ])
+
+        self.assertEqual(result.to_html(), expected.to_html())
+
     def test_consecutive_code_blocks(self):
         markdown = """```
 first code block

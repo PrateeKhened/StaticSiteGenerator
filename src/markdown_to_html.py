@@ -65,7 +65,12 @@ def markdown_to_html_node(markdown):
 
         if block_type == BlockType.QUOTE:
             lines = block.splitlines()
-            quote_lines = [line[2:] for line in lines if line.startswith("> ")]
+            quote_lines = []
+            for line in lines:
+                if line.startswith("> "):
+                    quote_lines.append(line[2:])
+                elif line == ">":
+                    quote_lines.append("")
             text = "\n".join(quote_lines)
             text_nodes = text_to_textnodes(text)
             children = [text_node_to_html_node(tn) for tn in text_nodes]

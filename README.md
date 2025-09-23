@@ -6,10 +6,12 @@ A Python-based static site generator that converts markdown files to static webs
 
 - **Complete Markdown Processing** - Full markdown-to-HTML conversion pipeline
 - **Block-Level Elements** - Support for headings, paragraphs, code blocks, quotes, and lists
+- **Quote Block Enhancement** - Proper handling of quotes with empty lines (fixed recent issue)
+- **Title Extraction** - Extract h1 headers from markdown for page titles
 - **Inline Formatting** - Bold, italic, code, links, and images with delimiter processing
 - **Text Processing Pipeline** - Clean separation between text representation and HTML generation
 - **Modular Architecture** - Well-structured codebase with clear separation of concerns
-- **Comprehensive Testing** - Extensive test suite with 120+ test cases covering all components
+- **Comprehensive Testing** - Extensive test suite with 130+ test cases covering all components
 
 ## 📁 Project Structure
 
@@ -60,6 +62,7 @@ StaticSiteGenerator/
 
 #### Markdown-to-HTML Conversion (`markdown_to_html.py`)
 - **`markdown_to_html_node()`** - Complete pipeline converting markdown documents to HTML node trees
+- **`extract_title()`** - Extract h1 header from markdown documents for page titles
 
 ### Design Patterns
 
@@ -135,6 +138,30 @@ html_node = markdown_to_html_node(markdown)
 
 # Generate final HTML
 html_output = html_node.to_html()
+```
+
+### Extracting Page Titles
+
+```python
+from markdown_to_html import extract_title
+
+# Extract h1 header for page title
+markdown = """# My Blog Post
+
+This is the content of the blog post."""
+
+title = extract_title(markdown)
+# Result: "My Blog Post"
+
+# Handles whitespace and formatting
+title = extract_title("#   Welcome to My Site   ")
+# Result: "Welcome to My Site"
+
+# Raises exception if no h1 header found
+try:
+    title = extract_title("## Only h2 headers here")
+except Exception as e:
+    print("No h1 header found")
 ```
 
 ### Processing Inline Markdown
@@ -215,6 +242,8 @@ The project includes comprehensive test coverage:
 
 - [x] Full markdown parsing (headers, lists, paragraphs, quotes, code blocks)
 - [x] Complete markdown-to-HTML conversion pipeline
+- [x] Title extraction from markdown documents
+- [x] Quote blocks with empty lines support
 - [ ] File system integration for reading markdown files
 - [ ] Template system for HTML generation
 - [ ] CSS styling support

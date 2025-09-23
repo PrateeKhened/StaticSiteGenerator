@@ -20,7 +20,7 @@ def block_to_block_type(block):
 
     if block.startswith("> "):
         for line in lines:
-            if not line.startswith("> "):
+            if not (line.startswith("> ") or line == ">"):
                 return BlockType.PARAGRAPH
         return BlockType.QUOTE
 
