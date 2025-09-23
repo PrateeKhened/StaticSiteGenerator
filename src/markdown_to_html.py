@@ -3,6 +3,17 @@ from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node
 from htmlnode import ParentNode, LeafNode
 
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.HEADING:
+            if block.startswith("# "):
+                return block[2:].strip()
+
+    raise Exception("No h1 header found")
+
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     per_block = []

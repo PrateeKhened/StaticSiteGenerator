@@ -1,5 +1,5 @@
 import unittest
-from markdown_to_html import markdown_to_html_node
+from markdown_to_html import markdown_to_html_node, extract_title
 from htmlnode import ParentNode, LeafNode
 
 
@@ -268,6 +268,112 @@ second code block
         # Should still create a valid structure even if nesting isn't handled
         self.assertEqual(result.tag, "div")
         self.assertTrue(len(result.children) >= 1)
+
+
+class TestExtractTitle(unittest.TestCase):
+
+    def test_extract_title_simple(self):
+        markdown = "# Hello"
+        result = extract_title(markdown)
+        self.assertEqual(result, "Hello")
+
+    def test_extract_title_with_whitespace(self):
+        markdown = "#   Hello World   "
+        result = extract_title(markdown)
+        self.assertEqual(result, "Hello World")
+
+    def test_extract_title_with_content_after(self):
+        markdown = """# Main Title
+
+This is some content after the title.
+
+## Subtitle
+
+More content here."""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Main Title")
+
+    def test_extract_title_with_inline_formatting(self):
+        markdown = "# Title with **bold** and *italic* text"
+        result = extract_title(markdown)
+        self.assertEqual(result, "Title with **bold** and *italic* text")
+
+    def test_extract_title_ignores_h2(self):
+        markdown = """## Not the title
+
+# The Real Title
+
+More content."""
+        result = extract_title(markdown)
+        self.assertEqual(result, "The Real Title")
+
+    def test_extract_title_ignores_h3_through_h6(self):
+        markdown = """### Level 3
+#### Level 4
+##### Level 5
+###### Level 6
+
+# Level 1 Title
+
+More content."""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Level 1 Title")
+
+    def test_extract_title_no_h1_header_raises_exception(self):
+        markdown = """## This is h2
+
+### This is h3
+
+This is just text."""
+        with self.assertRaises(Exception) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "No h1 header found")
+
+    def test_extract_title_empty_markdown_raises_exception(self):
+        markdown = ""
+        with self.assertRaises(Exception) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "No h1 header found")
+
+    def test_extract_title_only_whitespace_raises_exception(self):
+        markdown = "   \n\n   \n   "
+        with self.assertRaises(Exception) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "No h1 header found")
+
+    def test_extract_title_invalid_h1_format_raises_exception(self):
+        markdown = """#No space after hash
+
+This is not a valid h1 header."""
+        with self.assertRaises(Exception) as context:
+            extract_title(markdown)
+        self.assertEqual(str(context.exception), "No h1 header found")
+
+    def test_extract_title_multiple_h1_returns_first(self):
+        markdown = """# First Title
+
+Some content.
+
+# Second Title
+
+More content."""
+        result = extract_title(markdown)
+        self.assertEqual(result, "First Title")
+
+    def test_extract_title_h1_with_special_characters(self):
+        markdown = "# Title with $pecial Ch@racters & Symbols!"
+        result = extract_title(markdown)
+        self.assertEqual(result, "Title with $pecial Ch@racters & Symbols!")
+
+    def test_extract_title_h1_with_numbers(self):
+        markdown = "# 123 Numbered Title 456"
+        result = extract_title(markdown)
+        self.assertEqual(result, "123 Numbered Title 456")
+
+    def test_extract_title_single_word(self):
+        markdown = "# Title"
+        result = extract_title(markdown)
+        self.assertEqual(result, "Title")
 
 
 if __name__ == "__main__":
