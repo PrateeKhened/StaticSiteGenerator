@@ -1,94 +1,158 @@
 # Static Site Generator
 
-A Python-based static site generator that converts markdown files to static websites with a clean, modular architecture.
+A Python-based static site generator that converts markdown files into beautiful static websites with zero dependencies.
 
-## 🚀 Features
+## Description
 
-- **Complete Markdown Processing** - Full markdown-to-HTML conversion pipeline
-- **Block-Level Elements** - Support for headings, paragraphs, code blocks, quotes, and lists
-- **Quote Block Enhancement** - Proper handling of quotes with empty lines (fixed recent issue)
-- **Title Extraction** - Extract h1 headers from markdown for page titles
-- **Inline Formatting** - Bold, italic, code, links, and images with delimiter processing
-- **Text Processing Pipeline** - Clean separation between text representation and HTML generation
-- **Modular Architecture** - Well-structured codebase with clear separation of concerns
-- **Comprehensive Testing** - Extensive test suite with 130+ test cases covering all components
+This static site generator transforms your markdown content into a complete website using a clean, modular architecture. It features:
 
-## 📁 Project Structure
+- **Full Markdown Support** - Headings, paragraphs, code blocks, quotes, lists, bold, italic, links, and images
+- **Template System** - Simple HTML templates with placeholder replacement
+- **Asset Management** - Automatic copying of static files (CSS, images, etc.)
+- **Development Server** - Built-in local server for testing your site
+- **Zero Dependencies** - Uses only Python standard library
+- **Comprehensive Testing** - 130+ test cases ensuring reliability
 
-```
-StaticSiteGenerator/
-├── src/
-│   ├── htmlnode.py              # HTML generation layer
-│   ├── textnode.py              # Text representation layer
-│   ├── inline_markdown.py       # Inline markdown processing utilities
-│   ├── block_markdown.py        # Block-level markdown processing
-│   ├── markdown_to_html.py      # Complete markdown-to-HTML conversion
-│   ├── main.py                 # Application entry point
-│   ├── test_htmlnode.py        # HTML node tests
-│   ├── test_textnode.py        # Text node tests
-│   ├── test_inline_markdown.py # Inline markdown tests
-│   ├── test_block_markdown.py  # Block markdown tests
-│   └── test_markdown_to_html.py # Integration tests
-├── main.sh                     # Application runner script
-├── test.sh                    # Test runner script
-├── CLAUDE.md                  # Claude Code guidance
-└── README.md                  # Project documentation
-```
+## Motivation
 
-## 🏗️ Architecture
+Modern static site generators often come with complex dependencies, steep learning curves, and opinionated frameworks. This project provides a simple, educational approach to static site generation that:
 
-### Core Components
+- **Teaches fundamentals** - Clear, readable code that demonstrates how static site generators work
+- **Stays lightweight** - No external dependencies or complex configuration
+- **Remains flexible** - Easy to understand and modify for specific needs
+- **Follows best practices** - Clean architecture with proper separation of concerns
 
-#### TextNode Layer (`textnode.py`)
-- **`TextNode`** - Represents text elements with type and optional URL
-- **`TextType`** - Enum for different text types (text, bold, italic, code, links, images)
-- **`text_node_to_html_node()`** - Converts TextNodes to HTMLNodes
-
-#### HTMLNode Layer (`htmlnode.py`)
-- **`HTMLNode`** - Base class with common interface and `props_to_html()` utility
-- **`LeafNode`** - Terminal nodes with content (e.g., `<p>text</p>`, `<b>bold</b>`)
-- **`ParentNode`** - Container nodes with children (e.g., `<div><span>content</span></div>`)
-
-#### Inline Markdown Processing (`inline_markdown.py`)
-- **`text_to_textnodes()`** - Main pipeline converting raw text to structured TextNodes
-- **`split_nodes_delimiter()`** - Process inline formatting delimiters (**, *, `)
-- **`extract_markdown_images()`** - Extract image references from markdown text
-- **`extract_markdown_links()`** - Extract link references from markdown text
-
-#### Block Markdown Processing (`block_markdown.py`)
-- **`BlockType`** - Enum defining paragraph, heading, code, quote, unordered_list, ordered_list
-- **`markdown_to_blocks()`** - Split markdown text into logical blocks
-- **`block_to_block_type()`** - Classify markdown blocks by their type
-
-#### Markdown-to-HTML Conversion (`markdown_to_html.py`)
-- **`markdown_to_html_node()`** - Complete pipeline converting markdown documents to HTML node trees
-- **`extract_title()`** - Extract h1 header from markdown documents for page titles
-
-### Design Patterns
-
-The architecture follows **SOLID principles** with clear separation of responsibilities:
-
-- **Single Responsibility** - Each class has one reason to change
-- **Open/Closed** - Easy to extend with new node types or text types
-- **Inheritance Hierarchy** - HTMLNode → LeafNode/ParentNode
-- **Composition** - TextNodes convert to HTMLNodes through dedicated functions
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.6+
 - No external dependencies required
 
-### Running the Application
+### Installation
 
+1. Clone the repository:
 ```bash
-# Using the shell script
-./main.sh
+git clone https://github.com/prateekkhenedcodes/StaticSiteGenerator.git
+cd StaticSiteGenerator
+```
 
-# Or directly with Python
+2. Create your content structure:
+```
+your-site/
+├── content/           # Your markdown files
+│   ├── index.md
+│   └── about.md
+├── static/            # CSS, images, etc.
+│   └── style.css
+└── template.html      # HTML template
+```
+
+3. Create a simple template (`template.html`):
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ Title }}</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    {{ Content }}
+</body>
+</html>
+```
+
+4. Generate your site and start the development server:
+```bash
+./main.sh
+```
+
+Your site will be available at `http://localhost:8888`
+
+### Example Content
+
+Create `content/index.md`:
+```markdown
+# Welcome to My Site
+
+This is a **static site** generated from *markdown*!
+
+## Features
+
+- Easy to use
+- Fast generation
+- Clean output
+
+Check out the [about page](about.html)!
+```
+
+## Usage
+
+### Basic Commands
+
+**Generate site and start development server:**
+```bash
+./main.sh
+```
+
+**Generate site only:**
+```bash
 python3 src/main.py
 ```
+
+**Run tests:**
+```bash
+./test.sh
+```
+
+### Project Structure
+
+Your site should follow this structure:
+```
+StaticSiteGenerator/
+├── content/              # Markdown files (.md)
+├── static/               # CSS, images, assets
+├── template.html         # HTML template
+├── docs/                 # Generated output
+└── src/                  # Generator source code
+```
+
+### Template System
+
+Templates use simple placeholder replacement:
+- `{{ Title }}` - Replaced with the h1 heading from markdown
+- `{{ Content }}` - Replaced with the generated HTML content
+
+### Supported Markdown Features
+
+- **Headings** - `# ## ###` (h1, h2, h3)
+- **Text formatting** - `**bold**`, `*italic*`, `` `code` ``
+- **Links** - `[text](url)`
+- **Images** - `![alt](url)`
+- **Lists** - `- item` and `1. item`
+- **Code blocks** - `` ``` code ``` ``
+- **Quotes** - `> quote text`
+
+## Contributing
+
+We welcome contributions! Here's how to get started:
+
+### Development Setup
+
+1. **Fork and clone** the repository
+2. **Create a feature branch**: `git checkout -b feature/your-feature`
+3. **Make your changes** following the existing code patterns
+4. **Add tests** for new functionality in the `src/test_*.py` files
+5. **Run the test suite**: `./test.sh` (ensure all tests pass)
+6. **Test the generator**: `./main.sh` (verify the site builds correctly)
+
+### Code Guidelines
+
+- **Follow existing patterns** - All classes implement `__eq__` and `__repr__` methods
+- **Write tests** - Each new feature should include comprehensive test coverage
+- **Use descriptive names** - Functions and variables should clearly express their purpose
+- **Keep it simple** - Favor readable code over clever optimizations
+- **Test edge cases** - Include tests for boundary conditions and error scenarios
 
 ### Running Tests
 
@@ -96,178 +160,29 @@ python3 src/main.py
 # Run all tests
 ./test.sh
 
-# Or with Python unittest
-python3 -m unittest discover -s src
-
 # Run specific test files
 python3 -m unittest src.test_textnode
-python3 -m unittest src.test_htmlnode
-python3 -m unittest src.test_inline_markdown
-python3 -m unittest src.test_block_markdown
 python3 -m unittest src.test_markdown_to_html
+
+# Run individual test classes
+python3 -m unittest src.test_block_markdown.TestBlockToBlockType
 ```
 
-## 📝 Usage Examples
+### Submitting Changes
 
-### Complete Markdown-to-HTML Conversion
+1. **Commit your changes**: `git commit -m 'Add amazing feature'`
+2. **Push to your fork**: `git push origin feature/your-feature`
+3. **Create a Pull Request** with a clear description of your changes
 
-```python
-from markdown_to_html import markdown_to_html_node
+### Areas for Contribution
 
-# Convert complete markdown document
-markdown = """# My Blog Post
+- **New markdown features** (tables, strikethrough, etc.)
+- **Performance optimizations**
+- **Additional template features**
+- **Better error messages**
+- **Documentation improvements**
 
-This is a paragraph with **bold** and *italic* text.
+---
 
-## Code Example
-
-```python
-def hello():
-    print("Hello, World!")
-```
-
-> This is a quote with some important information.
-
-- First item
-- Second item
-- Third item
-"""
-
-# Convert to HTML node tree
-html_node = markdown_to_html_node(markdown)
-
-# Generate final HTML
-html_output = html_node.to_html()
-```
-
-### Extracting Page Titles
-
-```python
-from markdown_to_html import extract_title
-
-# Extract h1 header for page title
-markdown = """# My Blog Post
-
-This is the content of the blog post."""
-
-title = extract_title(markdown)
-# Result: "My Blog Post"
-
-# Handles whitespace and formatting
-title = extract_title("#   Welcome to My Site   ")
-# Result: "Welcome to My Site"
-
-# Raises exception if no h1 header found
-try:
-    title = extract_title("## Only h2 headers here")
-except Exception as e:
-    print("No h1 header found")
-```
-
-### Processing Inline Markdown
-
-```python
-from inline_markdown import text_to_textnodes
-from textnode import text_node_to_html_node
-
-# Process text with multiple inline formats
-text = "This has **bold**, *italic*, and `code` formatting with a [link](https://example.com)"
-text_nodes = text_to_textnodes(text)
-
-# Convert to HTML nodes
-html_nodes = [text_node_to_html_node(node) for node in text_nodes]
-```
-
-### Working with Block Types
-
-```python
-from block_markdown import markdown_to_blocks, block_to_block_type, BlockType
-
-# Split markdown into blocks
-markdown = """# Heading
-
-Paragraph text here.
-
-```
-code block
-```"""
-
-blocks = markdown_to_blocks(markdown)
-# Result: ["# Heading", "Paragraph text here.", "```\ncode block\n```"]
-
-# Classify each block
-for block in blocks:
-    block_type = block_to_block_type(block)
-    print(f"{block_type}: {block}")
-# Output: BlockType.HEADING: # Heading
-#         BlockType.PARAGRAPH: Paragraph text here.
-#         BlockType.CODE: ```\ncode block\n```
-```
-
-## 🧪 Testing
-
-The project includes comprehensive test coverage:
-
-- **`test_textnode.py`** - TextNode functionality and text-to-HTML conversion
-- **`test_htmlnode.py`** - HTML node hierarchy and generation
-- **`test_inline_markdown.py`** - Inline markdown processing and extraction utilities
-- **`test_block_markdown.py`** - Block-level markdown processing and classification
-- **`test_markdown_to_html.py`** - Complete markdown-to-HTML conversion pipeline
-
-### Test Categories
-
-- ✅ **Unit Tests** - Individual component functionality
-- ✅ **Integration Tests** - Component interaction testing
-- ✅ **Edge Cases** - Boundary conditions and error handling
-- ✅ **Validation Tests** - Input validation and error scenarios
-
-## 🛠️ Development
-
-### Code Patterns
-
-- All classes implement `__eq__` and `__repr__` methods
-- TextType enum uses string values for each type
-- HTMLNode inheritance pattern with base class interface
-- Properties converted to HTML attributes using `props_to_html()`
-- Comprehensive error handling with descriptive messages
-
-### Adding New Features
-
-1. **New Text Types** - Add to `TextType` enum and update conversion logic
-2. **New HTML Nodes** - Inherit from `HTMLNode` and implement `to_html()`
-3. **New Markdown Features** - Add processing functions to `inline_markdown.py`
-4. **Testing** - Add corresponding tests following existing patterns
-
-## 📋 Roadmap
-
-- [x] Full markdown parsing (headers, lists, paragraphs, quotes, code blocks)
-- [x] Complete markdown-to-HTML conversion pipeline
-- [x] Title extraction from markdown documents
-- [x] Quote blocks with empty lines support
-- [ ] File system integration for reading markdown files
-- [ ] Template system for HTML generation
-- [ ] CSS styling support
-- [ ] Static file copying
-- [ ] Build system for generating complete websites
-- [ ] Configuration system for customization
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes following existing code patterns
-4. Add tests for new functionality
-5. Ensure all tests pass (`./test.sh`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgments
-
-- Built with Python's standard library
-- Inspired by modern static site generators like Hugo and Jekyll
-- Designed with clean architecture principles and testability in mind
+**License**: MIT License
+**Built with**: Python standard library only
