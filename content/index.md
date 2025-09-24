@@ -4,9 +4,9 @@
 
 Here's the deal, **I like Tolkien**.
 
-> "Prateek Khened has white hair"
+> "I am in fact a Hobbit in all but size."
 >
-> -- George Prateek Khan
+> -- J.R.R. Tolkien
 
 ## Blog posts
 
