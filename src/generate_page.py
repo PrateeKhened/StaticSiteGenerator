@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from markdown_to_html import markdown_to_html_node, extract_title
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     
     for file in os.listdir(dir_path_content):
         from_path = os.path.join(dir_path_content, file)
@@ -10,11 +10,11 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         if os.path.isfile(from_path):
             if file.endswith(".md"):
                 dest_path = Path(dest_path).with_suffix(".html")
-                generate_page(from_path, template_path, dest_path)
+                generate_page(from_path, template_path, dest_path, base_path)
         else:
-            generate_pages_recursive(from_path, template_path, dest_path)
+            generate_pages_recursive(from_path, template_path, dest_path, base_path)
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
 
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
@@ -37,6 +37,8 @@ def generate_page(from_path, template_path, dest_path):
         template_text = f.read()
     
     html = markdown_to_html_node(markdown_text).to_html()
+    html = html.replace('href="/', f'href="{base_path}').replace('src="/', f'src="{base_path}')
+
     title = extract_title(markdown_text)
 
     output = template_text.replace("{{ Title }}", title).replace("{{ Content }}", html)
